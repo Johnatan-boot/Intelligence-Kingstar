@@ -59,6 +59,11 @@ export default defineConfig({
   },
 
   build: {
+    /*
+     * Federation pode gerar chunks com top-level await.
+     * Garantimos suporte configurando target moderno.
+     */
+    target: 'esnext',
     /* Entry point explícito para build de produção */
     rollupOptions: {
       input: path.resolve(__dirname, 'index.html'),
