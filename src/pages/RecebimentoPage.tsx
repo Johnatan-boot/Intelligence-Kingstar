@@ -2,10 +2,11 @@
  * RecebimentoPage — Recebimento Inteligente (Logistics v2)
  * Fluxo guiado com 3 conferências e real-time sync via Socket.io.
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, type ChangeEvent } from 'react'
 import { clsx } from 'clsx'
 import { socket } from '@/services/socket'
 import { toast } from '@/store/notificationStore'
+import { logisticsApi } from '@/services/api'
 
 interface ProdutoConferencia {
   sku: string;
@@ -21,6 +22,9 @@ export function RecebimentoPage() {
   const [fornecedor, setFornecedor] = useState('')
   const [placa, setPlaca] = useState('')
   const [isValidated, setIsValidated] = useState(false)
+  const [purchaseOrderId, setPurchaseOrderId] = useState<number | null>(null)
+  const [batchId, setBatchId] = useState<number | null>(null)
+  const [evidenceBase64, setEvidenceBase64] = useState<string>('')
   
   // Status e Conferência
   const [status, setStatus] = useState<'Aguardando' | 'Em Conferência' | 'Liberado' | 'Divergente'>('Aguardando')
@@ -40,6 +44,8 @@ export function RecebimentoPage() {
       setNf(data.invoice_number || '');
       setFornecedor(data.provider || 'Fornecedor Identificado');
       setPlaca(data.license_plate || '');
+      setPurchaseOrderId(data.purchase_order_id ? Number(data.purchase_order_id) : null);
+      setBatchId(data.id ? Number(data.id) : null);
       // Feedback visual de recebimento de evento
       document.getElementById('card-id')?.classList.add('ks-pulse-neon');
       setTimeout(() => document.getElementById('card-id')?.classList.remove('ks-pulse-neon'), 2000);
@@ -57,13 +63,27 @@ export function RecebimentoPage() {
   }, []);
 
   const validarDados = async () => {
-    if (!nf || !placa) { toast.error('Preencha NF e Placa'); return }
+    if (!nf || !placa || !fornecedor) { toast.error('Preencha NF, Fornecedor e Placa'); return }
+    if (!purchaseOrderId && !batchId) { toast.error('Sem pedido vinculado de Compras'); return }
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1000))
-    setIsValidated(true)
-    setStatus('Em Conferência')
-    toast.success('Entrada autorizada! Iniciando conferência cega.')
-    setLoading(false)
+    try {
+      if (!batchId && purchaseOrderId) {
+        const batch = await logisticsApi.receiving.batches.create({
+          purchase_order_id: purchaseOrderId,
+          invoice_number: nf,
+          license_plate: placa,
+          provider_name: fornecedor
+        })
+        setBatchId(Number(batch.id))
+      }
+      setIsValidated(true)
+      setStatus('Em Conferência')
+      toast.success('Entrada autorizada! Iniciando conferência cega.')
+    } catch (err: any) {
+      toast.error(err.message ?? 'Falha ao iniciar recebimento')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const registrarContagem = (sku: string, qtd: number) => {
@@ -72,19 +92,63 @@ export function RecebimentoPage() {
     ))
   }
 
-  const finalizarRodada = () => {
+  const toBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = reject
+      reader.readAsDataURL(file)
+    })
+
+  const onEvidenceSelected = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const b64 = await toBase64(file)
+    setEvidenceBase64(b64)
+    toast.success('Evidência anexada')
+  }
+
+  const finalizarRodada = async () => {
+    if (!batchId) {
+      toast.error('Lote de recebimento não iniciado')
+      return
+    }
+    setLoading(true)
     const temDivergencia = itens.some(i => i.qtdConferida !== i.qtdNota)
-    
-    if (temDivergencia && tentativa < 3) {
-      toast.warning(`Divergência na tentativa ${tentativa}. Próxima rodada liberada.`)
-      setTentativa(prev => prev + 1)
-      setItens(prev => prev.map(i => ({ ...i, qtdConferida: 0 })))
-    } else if (temDivergencia && tentativa === 3) {
-      setStatus('Divergente')
-      toast.error('Divergência persistente. Lote bloqueado para auditoria.')
-    } else {
-      setStatus('Liberado')
-      toast.success('Carga 100% Conferida! Liberada para o estoque.')
+    try {
+      for (const item of itens) {
+        await logisticsApi.receiving.conference(batchId, {
+          product_id: Number(item.sku.replace(/\D/g, '')) || 1,
+          round_number: tentativa,
+          quantity_counted: item.qtdConferida,
+          invoice_number: nf,
+          provider_name: fornecedor,
+          license_plate: placa,
+          evidence_image_base64: tentativa === 3 ? evidenceBase64 : undefined
+        })
+      }
+
+      if (tentativa < 3) {
+        setTentativa(prev => prev + 1)
+        setItens(prev => prev.map(i => ({ ...i, qtdConferida: 0 })))
+        toast.info(`Rodada ${tentativa} registrada. Próxima conferência liberada.`)
+      } else if (temDivergencia) {
+        setStatus('Divergente')
+        await logisticsApi.receiving.batches.updateStatus(batchId, 'DIVERGENT')
+        toast.error('Divergência após 3 conferências. Lote bloqueado.')
+      } else {
+        if (!evidenceBase64) {
+          toast.error('Anexe o print da conferência para liberar o lote.')
+          return
+        }
+        setStatus('Liberado')
+        await logisticsApi.receiving.batches.updateStatus(batchId, 'RELEASED')
+        toast.success('3 conferências concluídas e lote liberado com evidência.')
+      }
+    } catch (err: any) {
+      toast.error(err.message ?? 'Falha ao registrar conferência')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -169,15 +233,18 @@ export function RecebimentoPage() {
           </div>
 
           <div className="ks-card bg-ks-bg-hover flex flex-col gap-3">
-             <button className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group">
+             <label className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group cursor-pointer">
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-ks-blue/10 flex items-center justify-center text-ks-blue">
                       <i className="fas fa-camera text-xs"/>
                    </div>
-                   <span className="text-xs font-bold text-[var(--ks-text-muted)] group-hover:text-white transition-colors">Capturar Evidência</span>
+                   <span className="text-xs font-bold text-[var(--ks-text-muted)] group-hover:text-white transition-colors">
+                    {evidenceBase64 ? 'Evidência anexada' : 'Anexar print de evidência'}
+                   </span>
                 </div>
+                <input type="file" accept="image/*" className="hidden" onChange={onEvidenceSelected} />
                 <i className="fas fa-chevron-right text-[10px] opacity-0 group-hover:opacity-50 group-hover:translate-x-1 transition-all"/>
-             </button>
+             </label>
              <button className="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group border border-dashed border-white/5">
                 <div className="flex items-center gap-3">
                    <div className="w-8 h-8 rounded-lg bg-ks-green/10 flex items-center justify-center text-ks-green">
@@ -284,9 +351,9 @@ export function RecebimentoPage() {
                      onClick={()=>setStatus('Divergente')}>
                       BLOQUEIO MANUAL
                    </button>
-                   <button className="ks-btn ks-btn-primary px-8 h-12 text-xs font-black uppercase shadow-lg shadow-ks-blue/20" 
-                     onClick={finalizarRodada} disabled={status!=='Em Conferência'}>
-                     {tentativa < 3 ? 'FINALIZAR RODADA' : 'FECHAR LOTE'} 
+                   <button className="ks-btn ks-btn-primary px-8 h-12 text-xs font-black uppercase shadow-lg shadow-ks-blue/20 disabled:opacity-60" 
+                     onClick={finalizarRodada} disabled={status!=='Em Conferência' || loading}>
+                     {tentativa < 3 ? 'FINALIZAR RODADA' : 'FECHAR LOTE (3/3)'} 
                      <i className="fas fa-chevron-right ml-2 text-[10px]"/>
                    </button>
                 </div>

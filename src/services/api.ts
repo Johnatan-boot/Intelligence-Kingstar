@@ -106,6 +106,43 @@ export const shipmentsApi = {
                   http.patch(`/shipments/${id}/status`, { status }).then(r => r.data),
 }
 
+/* ── Endpoints LOGISTICS (Compras/Recebimento) ───────────── */
+export const logisticsApi = {
+  purchaseOrders: {
+    list:   () => http.get('/logistics/purchase-orders').then(r => r.data),
+    create: (data: {
+      provider_name: string
+      invoice_number: string
+      license_plate: string
+      expected_delivery_date?: string
+      items?: Array<{ product_id: number; quantity_ordered: number }>
+    }) => http.post('/logistics/purchase-orders', data).then(r => r.data),
+  },
+  receiving: {
+    batches: {
+      list:   () => http.get('/logistics/receiving/batches').then(r => r.data),
+      create: (data: {
+        purchase_order_id: number
+        invoice_number: string
+        license_plate: string
+        provider_name?: string
+      }) => http.post('/logistics/receiving/batches', data).then(r => r.data),
+      updateStatus: (id: number, status: 'IN_CONFERENCE' | 'RELEASED' | 'DIVERGENT') =>
+        http.patch(`/logistics/receiving/batches/${id}/status`, { status }).then(r => r.data),
+    },
+    conference: (batchId: number, data: {
+      product_id: number
+      round_number: number
+      quantity_counted: number
+      user_id?: number
+      invoice_number?: string
+      provider_name?: string
+      license_plate?: string
+      evidence_image_base64?: string
+    }) => http.post(`/logistics/receiving/batches/${batchId}/conference`, data).then(r => r.data),
+  },
+}
+
 export default http
 
 /* ── Endpoints REALTIME ──────────────────────────────────────── */

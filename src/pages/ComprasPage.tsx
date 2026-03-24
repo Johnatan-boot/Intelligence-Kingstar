@@ -2,60 +2,108 @@
  * ComprasPage — Planejamento e Compras (Logistics v2)
  * Monitoramento de demanda e criação de Pedidos de Compra com real-time sync.
  */
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { clsx } from 'clsx'
 import { socket } from '@/services/socket'
 import { toast } from '@/store/notificationStore'
+import { logisticsApi } from '@/services/api'
 
 interface PedidoCompra {
-  id: string;
+  id: number;
   fornecedor: string;
-  dataEntrega: string;
+  dataEntrega: string | null;
+  notaFiscal: string | null;
+  placa: string | null;
   status: 'Agendado' | 'Em Trânsito' | 'No Pátio' | 'Descarregando' | 'Divergente' | 'Finalizado';
   progresso: number;
 }
 
 export function ComprasPage() {
-  const [pedidos, setPedidos] = useState<PedidoCompra[]>([
-    { id: 'PC-2024-001', fornecedor: 'Colchões Top Flex', dataEntrega: '2025-04-10', status: 'Em Trânsito', progresso: 0 },
-    { id: 'PC-2024-002', fornecedor: 'King Star Factory', dataEntrega: '2025-04-12', status: 'Agendado', progresso: 0 },
-    { id: 'PC-2024-003', fornecedor: 'Box & Cia', dataEntrega: '2025-04-09', status: 'Descarregando', progresso: 45 },
-  ])
+  const [pedidos, setPedidos] = useState<PedidoCompra[]>([])
   
-  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<number | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [newOrder, setNewOrder] = useState({ nf: '', provider: '', plate: '' })
+  const [creating, setCreating] = useState(false)
+  const [newOrder, setNewOrder] = useState({ nf: '', provider: '', plate: '', eta: '' })
+
+  const mapStatus = (status: string): PedidoCompra['status'] => {
+    if (status === 'DIVERGENT') return 'Divergente'
+    if (status === 'COMPLETED') return 'Finalizado'
+    if (status === 'RECEIVING') return 'Descarregando'
+    if (status === 'IN_TRANSIT') return 'Em Trânsito'
+    return 'Agendado'
+  }
+
+  const loadOrders = useCallback(async () => {
+    try {
+      const rows = await logisticsApi.purchaseOrders.list()
+      setPedidos((Array.isArray(rows) ? rows : []).map((r: any) => ({
+        id: Number(r.id),
+        fornecedor: r.provider_name ?? 'Fornecedor',
+        dataEntrega: r.expected_delivery_date ?? null,
+        notaFiscal: r.invoice_number ?? null,
+        placa: r.license_plate ?? null,
+        status: mapStatus(r.status),
+        progresso: r.status === 'COMPLETED' ? 100 : r.status === 'RECEIVING' ? 60 : r.status === 'DIVERGENT' ? 80 : 0
+      })))
+    } catch (err: any) {
+      toast.error(err.message ?? 'Falha ao carregar compras')
+    }
+  }, [])
 
   useEffect(() => {
+    loadOrders()
     socket.on('truck_arrived', (data) => {
       toast.info(`🚚 Caminhão NF ${data.invoice_number} chegou ao CD!`);
-      setPedidos(prev => prev.map(p => 
-        p.id === 'PC-2024-002' ? { ...p, status: 'No Pátio' } : p
+      setPedidos(prev => prev.map(p =>
+        p.id === Number(data.purchase_order_id) ? { ...p, status: 'No Pátio', notaFiscal: data.invoice_number ?? p.notaFiscal, placa: data.license_plate ?? p.placa } : p
       ))
     })
 
     socket.on('conference_update', (data) => {
       setPedidos(prev => prev.map(p => 
-        p.status === 'Descarregando' ? { ...p, progresso: Math.min(p.progresso + 10, 100) } : p
+        p.id === Number(data.batchId ?? data.purchase_order_id) || p.status === 'Descarregando'
+          ? { ...p, progresso: Math.min(p.progresso + 10, 100), status: 'Descarregando' }
+          : p
+      ))
+    })
+
+    socket.on('receiving_completed', (data) => {
+      setPedidos(prev => prev.map(p =>
+        p.id === Number(data.purchase_order_id ?? data.batchId) ? { ...p, status: 'Finalizado', progresso: 100 } : p
       ))
     })
 
     return () => {
       socket.off('truck_arrived')
       socket.off('conference_update')
+      socket.off('receiving_completed')
     }
-  }, [])
+  }, [loadOrders])
 
-  const handleCreateOrder = () => {
-    // Simular disparo de evento para o Recebimento
-    socket.emit('truck_arrived', { 
-      invoice_number: newOrder.nf, 
-      provider: newOrder.provider, 
-      license_plate: newOrder.plate 
-    });
-    toast.success('Pedido de Compra criado e enviado para o Recebimento!');
-    setIsModalOpen(false);
-    setNewOrder({ nf: '', provider: '', plate: '' });
+  const handleCreateOrder = async () => {
+    if (!newOrder.nf || !newOrder.provider || !newOrder.plate) {
+      toast.error('Preencha NF, Fornecedor e Placa')
+      return
+    }
+    setCreating(true)
+    try {
+      await logisticsApi.purchaseOrders.create({
+        provider_name: newOrder.provider,
+        invoice_number: newOrder.nf,
+        license_plate: newOrder.plate,
+        expected_delivery_date: newOrder.eta || undefined,
+        items: []
+      })
+      toast.success('Pedido de Compra criado e sincronizado com Recebimento!')
+      setIsModalOpen(false)
+      setNewOrder({ nf: '', provider: '', plate: '', eta: '' })
+      await loadOrders()
+    } catch (err: any) {
+      toast.error(err.message ?? 'Falha ao criar pedido de compra')
+    } finally {
+      setCreating(false)
+    }
   }
 
   return (
@@ -123,9 +171,9 @@ export function ComprasPage() {
                            expandedId === p.id ? 'bg-ks-blue/5' : 'hover:bg-white/[0.02]'
                         )} onClick={() => setExpandedId(expandedId === p.id ? null : p.id)}>
                            <div className="min-w-[180px]">
-                              <div className="text-[10px] font-black text-ks-blue mb-1 uppercase tracking-widest">{p.id}</div>
+                              <div className="text-[10px] font-black text-ks-blue mb-1 uppercase tracking-widest">PC-{p.id}</div>
                               <div className="font-black text-sm text-white/90">{p.fornecedor}</div>
-                              <div className="text-[10px] text-[var(--ks-text-muted)] font-bold mt-1 uppercase tracking-tighter">ETA: {p.dataEntrega}</div>
+                              <div className="text-[10px] text-[var(--ks-text-muted)] font-bold mt-1 uppercase tracking-tighter">ETA: {p.dataEntrega ?? '—'}</div>
                            </div>
                            
                            <div className="flex-1 min-w-[200px]">
@@ -170,11 +218,11 @@ export function ComprasPage() {
                                  </div>
                                  <div className="space-y-1">
                                     <div className="text-[10px] font-black text-white/30 uppercase">Placa</div>
-                                    <div className="text-sm font-mono font-black text-ks-green">KSB-2026</div>
+                                    <div className="text-sm font-mono font-black text-ks-green">{p.placa ?? '—'}</div>
                                  </div>
                                  <div className="space-y-1">
                                     <div className="text-[10px] font-black text-white/30 uppercase">Lacre/Doc</div>
-                                    <div className="text-sm font-mono font-bold">#NF-88122-00</div>
+                                    <div className="text-sm font-mono font-bold">#{p.notaFiscal ?? '—'}</div>
                                  </div>
                                  <div className="space-y-1">
                                     <div className="text-[10px] font-black text-white/30 uppercase">Doca Alocada</div>
@@ -219,10 +267,17 @@ export function ComprasPage() {
                            className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-sm focus:border-ks-blue outline-none transition-all font-mono uppercase" placeholder="ABC-1234"/>
                      </div>
                   </div>
+                  <div>
+                    <label className="text-[10px] uppercase font-black text-white/40 mb-2 block">Data Prevista</label>
+                    <input type="date" value={newOrder.eta} onChange={e => setNewOrder({ ...newOrder, eta: e.target.value })}
+                      className="w-full bg-black/60 border border-white/10 rounded-2xl p-4 text-sm focus:border-ks-blue outline-none transition-all"/>
+                  </div>
                   
                   <div className="pt-4 flex gap-4">
                      <button onClick={() => setIsModalOpen(false)} className="flex-1 ks-btn border border-white/10 text-white/50 hover:bg-white/5 font-black uppercase text-xs h-14 rounded-2xl">DESCARTAR</button>
-                     <button onClick={handleCreateOrder} className="flex-1 ks-btn ks-btn-primary font-black uppercase text-xs h-14 rounded-2xl shadow-xl shadow-ks-blue/20">CRIAR PEDIDO</button>
+                     <button onClick={handleCreateOrder} disabled={creating} className="flex-1 ks-btn ks-btn-primary font-black uppercase text-xs h-14 rounded-2xl shadow-xl shadow-ks-blue/20 disabled:opacity-60">
+                        {creating ? 'ENVIANDO...' : 'CRIAR PEDIDO'}
+                     </button>
                   </div>
                </div>
             </div>
