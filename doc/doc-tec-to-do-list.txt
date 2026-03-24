@@ -1,0 +1,238 @@
+Documentação Técnica – Backend Inicial KINGSTAR
+1. Contexto do Projeto
+
+O objetivo do backend é fornecer toda a lógica de um sistema de gestão de pedidos, estoque, reservas e faturamento, integrável via Fastify com banco de dados MySQL/MariaDB. O foco do dia foi criar a estrutura de banco de dados, rotas principais e funções de serviço para pedidos, estoque e relatórios iniciais.
+
+2. Estrutura de Banco de Dados Criada
+
+Tabelas principais:
+
+users → cadastro de usuários do sistema.
+
+customers → cadastro de clientes.
+
+suppliers → cadastro de fornecedores.
+
+categories → categorização de produtos.
+
+products → produtos, vinculados a categorias.
+
+warehouses → armazéns.
+
+locations → localização de produtos dentro do armazém.
+
+inventory → quantidade disponível e reservada de produtos.
+
+inventory_movements → histórico de movimentações de estoque.
+
+orders → pedidos de clientes.
+
+order_items → itens dentro de cada pedido.
+
+stock_reservations → reservas de estoque por pedido.
+
+picking_orders e picking_items → picking de pedidos
+
+
+
+
+📘 Documentação Técnica do Desenvolvimento Inicial do Backend
+
+(Estrutura base — será preenchida com detalhes assim que você enviar o conteúdo)
+
+1. Visão Geral do Projeto
+
+Objetivo geral do backend
+
+Tecnologias escolhidas (ex.: Node.js, Express, TypeORM, PostgreSQL, etc.)
+
+Arquitetura adotada
+
+Requisitos funcionais e não funcionais
+
+2. Configuração do Ambiente
+
+Instalação das ferramentas principais
+
+Configuração de versão do Node / NPM / Yarn
+
+Variáveis de ambiente
+
+Scripts de inicialização
+
+Explicação de estrutura de pastas
+
+3. Design da API
+
+Endpoints criados (e seus métodos HTTP)
+
+Recursos / rotas
+
+Modelos de dados (ERD / tabelas / relacionamentos)
+
+Validações
+
+4. Implementação
+
+Detalhes de cada módulo
+
+Middlewares
+
+Tratamento de erros
+
+Autenticação / Autorização
+
+Casos de uso implementados
+
+5. Testes
+
+Cobertura de testes
+
+Ferramentas usadas
+
+Resumo dos testes feitos
+
+6. Documentação de API
+
+Swagger / OpenAPI / Postman
+
+Exemplos de requisições e respostas
+
+7. Deploy & Configuração de Ambientes
+
+Como subir o backend em desenvolvimento
+
+Deploy em produção (se feito)
+
+8. Resumo do que foi feito hoje
+
+(Lista de atividades concluídas durante o dia de trabalho)
+
+📋 To‑Do List – Tarefas Concluídas (de hoje)
+
+(exemplo — será preenchido com o que você realmente fez)
+
+Inicialização do projeto
+
+Configuração do ambiente
+
+Criação do servidor básico
+
+Definição de rotas iniciais
+
+Implementação dos primeiros endpoints (ex.: GET /users)
+
+Configuração de banco de dados
+
+Testes unitários básicos concluídos
+
+📌 To‑Do List – Próximas Tarefas (para amanhã)
+
+(exemplo — será organizado com base no que você me mandar)
+
+Finalizar endpoints de CRUD
+
+Implementar autenticação JWT
+
+Documentar API com Swagger
+
+Integrar testes automatizados
+
+Configurar deploy em staging
+
+
+
+ ✅ O que já concluímos
+
+Banco de Dados
+
+Estrutura completa das tabelas principais: users, customers, products, orders, order_items, inventory, stock_reservations, warehouses, locations.
+
+Relacionamentos com FOREIGN KEY e constraints de integridade (evitando problemas de duplicate e FK).
+
+Dados de teste populados, já permitindo criar pedidos, reservar estoque e listar informações.
+
+Service Functions
+
+createOrder(data) → cria pedido, processa itens, reserva estoque e calcula total.
+
+listOrders() → lista pedidos em ordem decrescente.
+
+cancelOrder(orderId) → cancela pedido, libera estoque e atualiza reservas.
+
+Lock de estoque e transações garantem consistência (FOR UPDATE + beginTransaction()).
+
+Testes básicos executados
+
+Criação de pedidos via service.
+
+Cancelamento de pedidos e liberação de estoque.
+
+Conferência de estoque (quantity vs reserved_quantity).
+
+Listagem de pedidos em ordem correta.
+
+Estrutura pronta para Fastify
+
+Rotas podem chamar diretamente essas funções de service.
+
+IDs de teste já definidos e funcionais.
+
+⚠️ O que ainda falta para finalizar o backend inicial
+
+Relatórios e métricas
+
+Faturamento diário/mensal (CONFIRMED + DELIVERED).
+
+Estoque crítico (produtos com quantity - reserved_quantity < threshold).
+
+Resumo de pedidos (order_summary).
+
+Status automático e triggers
+
+Atualização automática do status de pedidos:
+PENDING → CONFIRMED → SHIPPED → DELIVERED.
+
+Possível implementação via cron job ou trigger no banco.
+
+Picking & Shipment
+
+Rotas para criação de picking_orders e picking_items.
+
+Criação de shipments e shipment_items.
+
+Integração com deliveries e carriers.
+
+Integração de clientes reais
+
+Cadastro avançado de clientes (address, phone, email).
+
+Histórico de pedidos por cliente.
+
+Integração com pagamentos (Stripe / Pagar.me) futura.
+
+Endpoints Fastify completos
+
+GET /orders, POST /orders, PUT /orders/:id/cancel → já mapeado.
+
+Endpoints para relatórios, picking, shipping e faturamento ainda não implementados.
+
+Parametrização para thresholds e períodos nos relatórios.
+
+Validação e tratamento de erros
+
+Camada de middleware Fastify para validar dados.
+
+Mensagens de erro consistentes para frontend.
+
+Logs e monitoramento de falhas.
+
+🗂️ Resumo: status atual
+
+Backend funcional para fluxo de pedidos + estoque básico.
+
+Dados de teste consistentes, sem erros de FK ou duplicate IDs.
+
+Funções críticas de criação e cancelamento de pedidos já testadas.
+
+Próximos passos são relatórios, picking/shipping, triggers e endpoints adicionais.

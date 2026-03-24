@@ -1,0 +1,441 @@
+/*
+ * ═══════════════════════════════════════════════════════════════
+ * KINGSTAR · IO — PROJETO C — Global Styles
+ * Design System completo com responsividade 320px → 4K
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * ÍNDICE:
+ *  1. Tailwind
+ *  2. Tokens CSS (dark/light)
+ *  3. Reset & Base
+ *  4. Scrollbar
+ *  5. Layout (wrapper, sidebar, main-content)
+ *  6. Componentes (card, badge, table, btn, input)
+ *  7. Animações
+ *  8. Media Queries (320 → 4K, comentadas para estudo)
+ */
+
+/* ─── 1. TAILWIND ─────────────────────────────────────────────────── */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── 2. TOKENS ───────────────────────────────────────────────────── */
+:root {
+  --ks-bg-main:   #0f0f0f;
+  --ks-bg-card:   #1a1a1a;
+  --ks-bg-hover:  #222;
+  --ks-sidebar:   #121212;
+  --ks-navbar:    #161616;
+  --ks-border:    #2a2a2a;
+  --ks-glass:     rgba(255,255,255,0.03);
+
+  --ks-yellow: #fbbf24;
+  --ks-blue:   #38bdf8;
+  --ks-green:  #22c55e;
+  --ks-red:    #ef4444;
+  --ks-purple: #a78bfa;
+  --ks-orange: #f97316;
+
+  --ks-text-main:  #f1f5f9;
+  --ks-text-muted: #94a3b8;
+
+  --ks-shadow-card:   0 4px 20px rgba(0,0,0,0.3);
+  --ks-shadow-blue:   0 0 15px rgba(56,189,248,0.3);
+  --ks-shadow-yellow: 0 0 15px rgba(251,191,36,0.3);
+  --ks-shadow-green:  0 0 15px rgba(34,197,94,0.3);
+  --ks-shadow-red:    0 0 15px rgba(239,68,68,0.3);
+
+  /* Sidebar width — controlada por JS via CSS var */
+  --ks-sidebar-w: 240px;
+}
+
+/* Modo claro — sidebar/navbar mantêm azul marinho (contraste premium) */
+.light {
+  --ks-bg-main:    #F0F2F5;
+  --ks-bg-card:    #FFFFFF;
+  --ks-bg-hover:   #F8FAFC;
+  --ks-sidebar:    #1A2744;
+  --ks-navbar:     #1E3160;
+  --ks-border:     #DDE3EE;
+  --ks-glass:      rgba(0,0,0,0.03);
+  --ks-text-main:  #1E293B;
+  --ks-text-muted: #64748B;
+  --ks-shadow-card: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* ─── 3. RESET & BASE ─────────────────────────────────────────────── */
+/* Box model: padding/border não somam ao tamanho — padrão moderno */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--ks-bg-main);
+  color: var(--ks-text-main);
+  /* overflow:hidden → scroll controlado por .ks-main-content */
+  overflow: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* ─── 4. SCROLLBAR ────────────────────────────────────────────────── */
+::-webkit-scrollbar       { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ks-border); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ks-text-muted); }
+* { scrollbar-width: thin; scrollbar-color: var(--ks-border) transparent; }
+
+/* ─── 5. LAYOUT ───────────────────────────────────────────────────── */
+
+/*
+ * .ks-wrapper — Flexbox linha: [sidebar | main]
+ * Em mobile (<768px) vira coluna com drawer overlay
+ */
+.ks-wrapper {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+/*
+ * .ks-sidebar — coluna lateral fixa
+ * Desktop: 240px estática
+ * Tablet 768px: drawer overlay deslizante (transform)
+ * Mobile: idem tablet
+ */
+.ks-sidebar {
+  width: var(--ks-sidebar-w);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ks-sidebar);
+  border-right: 1px solid var(--ks-border);
+  flex-shrink: 0;
+  transition: transform 0.3s ease, width 0.3s ease;
+  z-index: 40;
+}
+
+/* Sidebar colapsada desktop — só ícones (72px) */
+.ks-sidebar.collapsed {
+  width: 72px;
+}
+.ks-sidebar.collapsed .ks-menu-text,
+.ks-sidebar.collapsed .ks-logo-text { display: none; }
+.ks-sidebar.collapsed .ks-menu-link { justify-content: center; padding: 14px 0; }
+
+/*
+ * .ks-main-content — área de conteúdo
+ * flex:1 + min-width:0 → ocupa espaço restante sem overflow
+ */
+.ks-main-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--ks-bg-main);
+  transition: background 0.3s ease;
+}
+
+/* .ks-container — padding + max-width centralizado */
+.ks-container {
+  padding: 24px 28px;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-bottom: 120px; /* espaço para o AdvisorBot flutuante */
+}
+
+/* ─── 6. COMPONENTES ──────────────────────────────────────────────── */
+
+/* Card base */
+.ks-card {
+  background: var(--ks-bg-card);
+  border: 1px solid var(--ks-border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--ks-shadow-card);
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+.ks-card-io {
+  background: rgba(56,189,248,0.04);
+  border-top: 2px solid var(--ks-blue);
+}
+
+/* Badges */
+.ks-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 2px 10px; border-radius: 20px;
+  font-size: 0.68rem; font-weight: 700;
+  letter-spacing: 0.5px; text-transform: uppercase;
+}
+.ks-badge-ok      { background: rgba(34,197,94,0.15);  color: var(--ks-green);  border: 1px solid rgba(34,197,94,0.3); }
+.ks-badge-warning { background: rgba(251,191,36,0.15); color: var(--ks-yellow); border: 1px solid rgba(251,191,36,0.3); }
+.ks-badge-danger  { background: rgba(239,68,68,0.15);  color: var(--ks-red);    border: 1px solid rgba(239,68,68,0.3); }
+.ks-badge-info    { background: rgba(56,189,248,0.15); color: var(--ks-blue);   border: 1px solid rgba(56,189,248,0.3); }
+
+/* Tabela */
+.ks-table { width: 100%; border-collapse: collapse; }
+.ks-table th {
+  text-align: left; padding: 12px 14px;
+  color: var(--ks-text-muted); font-size: 0.68rem;
+  font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+  border-bottom: 1px solid var(--ks-border);
+}
+.ks-table td {
+  padding: 12px 14px; border-bottom: 1px solid var(--ks-border);
+  font-size: 0.85rem; color: var(--ks-text-main);
+  transition: background 0.15s;
+}
+.ks-table tr:hover td { background: var(--ks-bg-hover); }
+.ks-table tr:last-child td { border-bottom: none; }
+
+/* Botões */
+.ks-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 7px; padding: 9px 18px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 0.78rem;
+  font-weight: 700; cursor: pointer; border: none;
+  transition: all 0.2s ease; letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.ks-btn-primary { background: var(--ks-yellow); color: #000; }
+.ks-btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: var(--ks-shadow-yellow); }
+.ks-btn-blue    { background: var(--ks-blue); color: #000; }
+.ks-btn-blue:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: var(--ks-shadow-blue); }
+.ks-btn-ghost   { background: transparent; color: var(--ks-blue); border: 1px solid var(--ks-blue); }
+.ks-btn-ghost:hover { background: var(--ks-blue); color: #000; }
+.ks-btn-danger  { background: rgba(239,68,68,0.1); color: var(--ks-red); border: 1px solid var(--ks-red); }
+.ks-btn-danger:hover { background: var(--ks-red); color: #fff; }
+.ks-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+/* Input scan */
+.ks-scan-input {
+  flex: 1; min-width: 0;
+  padding: 13px 16px; border-radius: 8px;
+  border: 1px solid var(--ks-border);
+  border-left: 3px solid var(--ks-green);
+  background: #000; color: #fff;
+  font-size: 0.95rem; font-family: 'JetBrains Mono', monospace;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ks-scan-input:focus { border-color: var(--ks-green); box-shadow: var(--ks-shadow-green); }
+
+/* Menu link da sidebar */
+.ks-menu-link {
+  display: flex; align-items: center; gap: 11px;
+  padding: 11px 14px; border-radius: 10px;
+  font-size: 0.85rem; font-weight: 500;
+  text-decoration: none; border-left: 3px solid transparent;
+  transition: all 0.2s ease; color: var(--ks-text-muted);
+}
+.ks-menu-link:hover { background: var(--ks-glass); color: #fff; transform: translateX(3px); }
+.ks-menu-link.active {
+  border-left-color: var(--ks-blue);
+  background: rgba(56,189,248,0.08);
+  color: #fff;
+}
+
+/* ─── 7. ANIMAÇÕES ────────────────────────────────────────────────── */
+@keyframes ks-fade-up    { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes ks-slide-in   { from { transform:translateX(-100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes ks-slide-right { from { transform:translateX(100%); opacity:0; } to { transform:translateX(0); opacity:1; } }
+@keyframes ks-pulse-neon { 0%,100% { box-shadow:0 0 0 0 rgba(56,189,248,0.5); } 50% { box-shadow:0 0 14px 4px rgba(56,189,248,0); } }
+@keyframes ks-pulse-red  { 0%,100% { box-shadow:0 0 0 0 rgba(239,68,68,0.7); } 70% { box-shadow:0 0 0 10px rgba(239,68,68,0); } }
+@keyframes ks-ticker     { 0% { transform:translateX(0); } 100% { transform:translateX(-100%); } }
+@keyframes ks-blink      { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+@keyframes ks-spin       { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes ks-bounce-in  { 0% { transform:scale(0.8); opacity:0; } 70% { transform:scale(1.05); } 100% { transform:scale(1); opacity:1; } }
+
+.ks-fade-up     { animation: ks-fade-up     0.4s ease-out both; }
+.ks-slide-in    { animation: ks-slide-in    0.3s ease-out both; }
+.ks-slide-right { animation: ks-slide-right 0.3s ease-out both; }
+.ks-pulse-neon  { animation: ks-pulse-neon  2s infinite; }
+.ks-pulse-red   { animation: ks-pulse-red   2s infinite; }
+.ks-blink       { animation: ks-blink       1.5s ease-in-out infinite; }
+.ks-spin        { animation: ks-spin        1s linear infinite; }
+.ks-bounce-in   { animation: ks-bounce-in   0.5s cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* Stagger para listas */
+.ks-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.ks-stagger > *:nth-child(2) { animation-delay: 60ms; }
+.ks-stagger > *:nth-child(3) { animation-delay: 120ms; }
+.ks-stagger > *:nth-child(4) { animation-delay: 180ms; }
+.ks-stagger > *:nth-child(5) { animation-delay: 240ms; }
+.ks-stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ─── 8. MEDIA QUERIES ────────────────────────────────────────────── */
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  320px–479px — Smartphones muito pequenos                  │
+ * │  Galaxy A03, iPhone SE 1ª geração, Moto E                  │
+ * └─────────────────────────────────────────────────────────────┘
+ * Reduz fonte base e padding ao mínimo usável
+ */
+@media (max-width: 479px) {
+  html { font-size: 14px; }
+  .ks-container { padding: 10px; padding-bottom: 120px; }
+  .ks-card { padding: 14px; }
+  /* Tabela: esconde colunas secundárias */
+  .hide-xs { display: none !important; }
+}
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  480px–767px — Smartphones médios/grandes                  │
+ * │  iPhone 14, Galaxy S23, Pixel 7, Xiaomi 13                 │
+ * └─────────────────────────────────────────────────────────────┘
+ * Sidebar vira drawer overlay — hamburger na navbar ativa
+ */
+@media (max-width: 767px) {
+  /* Wrapper: coluna → navbar fixa no topo */
+  .ks-wrapper { flex-direction: column; }
+
+  /*
+   * Sidebar: sai do fluxo normal, vira drawer deslizante
+   * Técnica: position:fixed + translateX(-100%) escondido
+   * JS adiciona .open → translateX(0) revela o drawer
+   * Cobre 85vw da tela para parecer nativo
+   */
+  .ks-sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 85vw !important;
+    max-width: 300px;
+    height: 100vh;
+    transform: translateX(-100%);
+    z-index: 50;
+    box-shadow: 4px 0 40px rgba(0,0,0,0.6);
+  }
+  .ks-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Backdrop escuro quando drawer aberto */
+  .ks-sidebar-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+    z-index: 45;
+  }
+  .ks-sidebar-backdrop.open { display: block; }
+
+  /* Main content: ocupa tela toda */
+  .ks-main-content { width: 100%; }
+  .ks-container { padding: 14px; padding-bottom: 120px; }
+  .ks-card { padding: 16px; }
+
+  /* Formulários em coluna única */
+  .ks-form-row { flex-direction: column !important; }
+
+  /* Tabela: esconde colunas menos importantes */
+  .hide-sm { display: none !important; }
+}
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  768px — Tablets portrait e smartphones grandes landscape  │
+ * │  iPad mini, iPad Air, Galaxy Tab A8, Surface Go            │
+ * │  *** BREAKPOINT CHAVE SOLICITADO ***                        │
+ * └─────────────────────────────────────────────────────────────┘
+ * Sidebar: drawer overlay (igual mobile) — hamburger na navbar
+ * Grid de KPIs: 2 colunas
+ * Navbar: elementos completos visíveis
+ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* Sidebar: drawer overlay no tablet também */
+  .ks-sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: 280px !important;
+    height: 100vh;
+    transform: translateX(-100%);
+    z-index: 50;
+    box-shadow: 4px 0 40px rgba(0,0,0,0.5);
+  }
+  .ks-sidebar.open { transform: translateX(0); }
+  .ks-sidebar-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 45; }
+  .ks-sidebar-backdrop.open { display: block; }
+
+  /* Main content ocupa tudo */
+  .ks-main-content { width: 100%; }
+  .ks-container { padding: 18px 22px; padding-bottom: 120px; }
+
+  /* KPIs: 2 colunas no tablet */
+  .ks-kpi-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+  /* Tabela: esconde colunas de detalhe */
+  .hide-md { display: none !important; }
+}
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  1024px–1279px — Notebooks e tablets landscape             │
+ * │  MacBook Air 13", iPad Pro landscape, Surface Pro          │
+ * └─────────────────────────────────────────────────────────────┘
+ * Sidebar: estática 240px, sempre visível
+ */
+@media (min-width: 1024px) {
+  .ks-sidebar {
+    position: static;
+    transform: none !important;
+    width: var(--ks-sidebar-w) !important;
+  }
+  .ks-sidebar-backdrop { display: none !important; }
+  .ks-kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .ks-container { padding: 24px 28px; padding-bottom: 120px; }
+}
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  1280px–1535px — Desktops padrão                           │
+ * │  Full HD 1920×1080, iMac 21"                               │
+ * └─────────────────────────────────────────────────────────────┘
+ */
+@media (min-width: 1280px) {
+  .ks-container { max-width: 1400px; }
+}
+
+/*
+ * ┌─────────────────────────────────────────────────────────────┐
+ * │  1536px+ — Monitores grandes e 2K/4K                       │
+ * │  Dell 27", LG 32" 4K, monitor ultrawide                    │
+ * └─────────────────────────────────────────────────────────────┘
+ */
+@media (min-width: 1900px) {
+  html { font-size: 17px; }
+  .ks-container { max-width: 1800px; }
+}
+
+/* Acessibilidade: sem animações */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Impressão */
+@media print {
+  .ks-sidebar, .ks-navbar, .ks-ticker, .ks-bot, .ks-advisor { display: none !important; }
+  body { overflow: visible; background: white; color: black; }
+  .ks-main-content { overflow: visible; }
+}
+
+/* LoginPage precisa de scroll — override do body overflow:hidden */
+body:has(.ks-login-page) {
+  overflow: auto;
+}
+/* Fallback para browsers sem :has() */
+.ks-login-scroll-fix {
+  overflow-y: auto !important;
+  height: auto !important;
+}

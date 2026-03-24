@@ -1,0 +1,51 @@
+O ecossistema que Diego Fernandes e a equipe da Rocketseat (NLW Agents) têm abordado em 2025/2026 foca em Desenvolvimento Agêntico (AI Agents), onde a IA não apenas responde, mas executa tarefas, acessa ferramentas e toma decisões autônomas. 
+ConvergenciaDigital
+ConvergenciaDigital
+Aqui estão as ferramentas principais, com foco no cenário "Antigravity + Claude + N8N", com suas funções:
+1. Ferramentas Principais do Ecossistema Rocketseat (NLW)
+Google Antigravity (Antigravity Skills): 
+YouTube
+YouTube
+ +4
+Função: Uma plataforma de agentes que permite o uso de "skills" (habilidades/subagentes) para tarefas complexas, como navegação na web, automação, manipulação de arquivos e geração de código. É uma plataforma "agent-first".
+Como usar: É instalado como uma extensão (ou ferramenta CLI) que se integra com o Claude ou Gemini para orquestrar as ações.
+Claude Code (ou Claude AI): 
+YouTube
+YouTube
+ +2
+Função: Atua como o "cérebro" estratégico da equipe de IA. É usado na terminal para ler o código do projeto, fazer refatorações, criar testes e gerar novas funcionalidades, agindo de forma autônoma.
+Diferença: Antigravity foca na orquestração de subagentes, enquanto o Claude Code é focado na terminal para desenvolvimento.
+Pencil (Possivelmente PENCIL ou IA de UI): 
+YouTube
+YouTube
+ +2
+Função: Inclui agentes de IA que desenham/projetam interfaces (UI) e geram código frontend automaticamente (como React/Next.js) baseado no layout. Ferramentas como "Pencil" transformam prompts em layout funcional.
+N8N (com conexão à IA): 
+YouTube
+YouTube
+Função: Ferramenta de automação de fluxo de trabalho (no-code/low-code). No NLW, ele é usado para conectar o Agente (Antigravity/Claude) a outras APIs (WhatsApp, Telegram, Banco de Dados), permitindo que o agente envie e-mails, responda no Zap, etc.
+Stitch (ou ferramentas de UI generation): 
+YouTube
+YouTube
+Função: Usado para geração de layouts que são convertidos em código, permitindo que a IA construa a interface visual.
+2. Ferramentas Essenciais do Ambiente
+Node.js & React/Next.js: Base de conhecimento para os projetos.
+VS Code + Cursor: Editor de código comumente usado com IA.
+VPS Hostinger: Geralmente recomendado para hospedar o N8N e as APIs de agentes. 
+YouTube
+YouTube
+ +1
+Resumo das Funções
+Ferramenta 	Função Principal
+Antigravity	Orquestração de agentes e execução de tarefas (o "gerente").
+Claude Code	Geração de código, testes e análise estratégica (o "desenvolvedor").
+N8N	Automação e conexão com APIs externas (Zap, E-mail).
+Pencil/Stitch	Geração de UI e layout (o "designer").
+Como Instalar/Começar
+Antigravity: Acompanhar o repositório ou comunidade privada da Rocketseat (frequentemente mencionado o uso de npm para ferramentas CLI ou extensões Chrome/VS Code).
+Claude Code: Instalar via npm npm install -g @anthropic-ai/claude-code (requer chave API).
+N8N: Pode ser instalado via Docker em uma VPS. 
+Nota: As ferramentas citadas, especialmente "Antigravity", referem-se a um cenário de ponta abordado em 2026. 
+YouTube
+YouTube
+ +1

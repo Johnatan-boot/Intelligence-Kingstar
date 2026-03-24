@@ -1,0 +1,38 @@
+[CADASTRO]
+- users
+- customers
+- suppliers
+- products
+- categories
+
+[ESTRUTURA CD]
+- warehouses
+- locations
+
+[ESTOQUE]
+- inventory
+- inventory_movements
+
+[ENTRADA]
+- purchase_orders
+- receipts
+
+[VENDA]
+- orders
+- order_items
+
+[OPERAÇÃO]
+- picking_orders
+- picking_items
+
+[EXPEDIÇÃO]
+- shipments
+- shipment_items
+
+[TRANSPORTE]
+- carriers
+- deliveries
+
+[PÓS-VENDA]
+- returns
+- return_items

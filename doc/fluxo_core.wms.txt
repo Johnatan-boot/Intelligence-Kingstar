@@ -1,0 +1,47 @@
+🧩 FLUXO CORE DO WMS
+1. Criar pedido
+2. Reservar estoque
+3. Validar disponibilidade
+4. Criar picking
+5. Baixar estoque
+
+🧠 ARQUITETURA DESSE FLUXO
+🔹 Camadas envolvidas
+
+orders
+
+inventory
+
+stock_reservations (CRÍTICO)
+
+picking
+
+
+POST /orders
+
+→ service.createOrder()
+
+   → verifica estoque
+   → cria reserva
+   → cria pedido
+   → cria picking
+
+→ return OK
+
+
+🚨 ISSO É O CORAÇÃO DO SISTEMA
+
+Se isso funcionar bem:
+
+✔ Você tem produto vendável
+✔ Você tem controle real de estoque
+✔ Você resolve dor de mercado
+
+🧠 VISÃO DE ARQUITETO (MUITO IMPORTANTE)
+🔥 REGRA DE OURO
+
+Nunca atualize estoque direto no pedido
+
+Sempre:
+
+pedido → reserva → movimentação → baixa

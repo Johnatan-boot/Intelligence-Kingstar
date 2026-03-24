@@ -1,0 +1,140 @@
+🔄 Fluxo completo de um pedido
+POST /auth/login
+→
+POST /orders
+→
+PUT /orders/:id/confirm
+→
+POST /picking/order/:id
+→
+PATCH /picking/:id/items/:itemId/pick
+→
+POST /shipments
+→
+PATCH /shipments/:id/status
+🔐 Auth — primeiro passo
+POST
+/auth/register
+Criar usuário
+público
+POST
+/auth/login
+Obter token JWT
+público
+GET
+/auth/me
+Dados do usuário logado
+🔑 token
+📦 Products
+GET
+/products?page=1&search=notebook
+Listar com busca
+🔑
+GET
+/products/:id
+Detalhar + estoque
+🔑
+POST
+/products
+Criar produto
+🔑
+PUT
+/products/:id
+Atualizar
+🔑
+DELETE
+/products/:id
+Excluir
+🔑
+🏭 Inventory
+GET
+/inventory
+Listar estoque paginado
+🔑
+GET
+/inventory/critical?threshold=5
+Estoque crítico
+🔑
+GET
+/inventory/product/:id
+Por produto
+🔑
+POST
+/inventory/adjust
+Entrada/saída/ajuste
+🔑
+🛒 Orders
+GET
+/orders?status=PENDING
+Listar filtrado
+🔑
+GET
+/orders/:id
+Detalhar com itens
+🔑
+POST
+/orders
+Criar pedido
+🔑
+PUT
+/orders/:id/confirm
+Confirmar
+🔑
+PUT
+/orders/:id/cancel
+Cancelar + liberar estoque
+🔑
+📋 Picking
+GET
+/picking
+Listar pickings
+🔑
+GET
+/picking/:id
+Detalhar com itens
+🔑
+POST
+/picking/order/:orderId
+Criar picking de um pedido
+🔑
+PATCH
+/picking/:id/items/:itemId/pick
+Separar item
+🔑
+🚚 Shipments
+GET
+/shipments
+Listar envios
+🔑
+POST
+/shipments
+Criar envio + baixar estoque
+🔑
+PATCH
+/shipments/:id/status
+Atualizar status
+🔑
+📊 Reports
+GET
+/reports/revenue?period=daily
+Faturamento diário/mensal
+🔑
+GET
+/reports/orders/summary
+Resumo por status
+🔑
+GET
+/reports/inventory/critical
+Estoque crítico
+🔑
+🧪 Sequência de teste recomendada
+1POST /auth/login → copie o token
+2GET /products → confirme os 5 produtos do seed
+3GET /inventory → confirme o estoque
+4POST /orders com customer_id: 1 + items
+5PUT /orders/:id/confirm
+6POST /picking/order/:id
+7PATCH /picking/:id/items/:itemId/pick com quantity_picked
+8POST /shipments com order_id
+9PATCH /shipments/:id/status com status: "DELIVERED"
+10GET /reports/orders/summary → pedido deve aparecer como DELIVERED

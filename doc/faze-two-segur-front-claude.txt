@@ -1,0 +1,12 @@
+Perfeito. Tenho tudo que preciso. Deixa eu montar o plano completo antes de escrever uma linha de código:
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+VvisualizeVvisualize show_widget
+Análise completa do que você tem. O frontend atual é muito bem construído — dark theme forte, estrutura clara, lógica de bipagem inteligente com fallback de dados. A migração vai preservar tudo isso e turbinar.
+Minha pergunta antes de começar a Fase 1:
+Você quer que eu gere o projeto React já com Vite + TypeScript + Tailwind configurado, com o design system idêntico ao atual (mesmas cores, mesma sidebar, mesmo navbar), pronto para você instalar e ver rodando — ou prefere que eu explique cada escolha técnica antes de gerar?
+Me confirma também: o frontend vai rodar separado do backend (porta 5173 Vite ↔ porta 3000 API), certo? E o Pencil.dev você vai usar para o quê — prototipação visual ou geração de componentes?

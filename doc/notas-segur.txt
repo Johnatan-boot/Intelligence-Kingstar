@@ -1,0 +1,31 @@
+Entendido! Antes de começar o Caminho A, me manda os arquivos HTML/CSS/JS do frontend que você tem — assim eu alincho a validação com Zod já pensando na estrutura visual que você quer usar com o Pencil.dev.
+Sobre o backend: está funcionalmente completo, mas o Caminho A ainda vai fortalecer ele com:
+
+Validação de todos os inputs (Zod) — impede dados inválidos chegarem no banco
+Testes automatizados — garante que nada quebra ao evoluir
+Rate limiting — segurança contra abuso
+
+Enquanto você não manda os arquivos do frontend, posso já começar o Caminho A nos módulos mais críticos. O que prefere:Me diz o que escolheu e já começo — e vai buscando esses arquivos HTML/CSS/JS do frontend que é a próxima grande etapa do projeto!
+
+✅ Caminho A concluído — Zod em todos os endpoints
+O que foi implementado:
+Dois novos arquivos centrais em src/shared/validators/:
+
+schemas.js — todos os schemas Zod do projeto em um único lugar
+validate.js — função validate(schema, data) que lança erro 400 formatado automaticamente
+
+Todos os controllers atualizados — 10 módulos com validação completa em params, query e body.
+Exemplo do que acontece agora com dados inválidos:
+jsonPOST /products
+{ "sku": "", "price": -10 }
+
+→ 400 Bad Request
+{
+  "error": "sku: SKU não pode ter espaços | price: Preço deve ser positivo"
+}
+jsonPOST /inventory/adjust
+{ "type": "SAIDA" }
+
+→ 400 Bad Request
+{
+  "error": "product_id: Required | location_id: Required | quantity: Required | type: type deve ser IN, OUT ou ADJUST"

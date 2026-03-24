@@ -1,0 +1,31 @@
+Uma ruptura no processo logístico, comumente conhecida como ruptura de estoque ou stockout, ocorre quando um item desejado pelo consumidor não está disponível para compra no momento da procura. Isso representa uma falha em qualquer ponto da cadeia de suprimentos, impedindo que o produto chegue ao consumidor final no momento certo. 
+YouTube
+YouTube
+ +1
+Aqui estão os pontos principais sobre o que significa essa ruptura:
+Impacto no Cliente e Vendas: A ruptura significa perda direta de vendas, além de gerar insatisfação no consumidor, que pode trocar de marca ou loja. 
+saxbr.com
+saxbr.com
+Indisponibilidade no PDV: Ocorre quando o produto está faltando na gôndola, no site (e-commerce) ou no depósito. 
+InfoVarejo
+InfoVarejo
+ +1
+Falha na Cadeia de Suprimentos: Geralmente, 72% das rupturas devem-se a práticas incorretas de encomendas e reabastecimento nas lojas, enquanto 28% são devidas a problemas de planejamento na cadeia de suprimentos (fornecedores, produção, transporte). 
+YouTube
+YouTube
+Tipos de Ruptura: Pode ser uma ruptura operacional (falha na loja em repor o produto) ou ruptura comercial (problemas com fornecedores ou planejamento). 
+Grupo Nonna
+Grupo Nonna
+ +1
+Consequências: Aumento do índice de ruptura afeta o faturamento da empresa, diminui o nível de serviço ao cliente e representa um alto custo de oportunidade. 
+YouTube
+YouTube
+ +1
+Principais Causas de Ruptura Logística:
+Má Gestão na Loja: Falha na previsão de demanda, processos de reabastecimento falhos, ou erros no controle de estoque (estoque fantasma).
+Problemas com Fornecedores: Falta de matéria-prima, atrasos na produção ou falhas na entrega.
+Falhas na Logística: Gargalos no transporte, erros no armazenamento ou movimentação interna.
+Sistemas Inadequados: Falta de sistemas de informação (como WMS ou ERP) que garantam a visibilidade do estoque em tempo real. 
+YouTube
+YouTube
+ +1

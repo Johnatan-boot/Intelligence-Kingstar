@@ -1,0 +1,11 @@
+Situação atual do projeto
+Backend: 100% estruturado — 16 tabelas, 44 arquivos, 10 módulos, API rodando.
+A partir de agora, o projeto tem 3 caminhos possíveis dependendo do que você quer fazer:
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 0.25s;
+    animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+  }
+VvisualizeVvisualize show_widgetO banco está 100% configurado com as 16 tabelas. Pode clicar em qualquer item do roadmap para eu implementar agora, ou me dizer por onde quer continuar.
+Minha recomendação é começar pelo Caminho A — validação com Zod, porque você já tem a lib instalada no package.json e ela protege a API de dados inválidos antes mesmo de chegar no banco.

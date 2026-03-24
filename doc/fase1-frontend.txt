@@ -1,0 +1,5 @@
+O que está pronto na Fase 1:
+ArquivoO que faztailwind.config.tsDesign system completo — cores KINGSTAR, fontes Syne + DM Sans + JetBrains Mono, animações, sombras neonglobals.cssReset, tokens CSS, todas as media queries comentadas para estudo (mobile → 4K)AppShell.tsxWrapper autenticado — Sidebar + Navbar + LiveTicker + OutletSidebar.tsxNavegação responsiva — colapsa para ícones em tablet, barra horizontal em mobileThemeToggle.tsxInterruptor dark/light — sidebar mantém azul marinho nos dois modosCorePage.tsxPágina principal com KPIs reais da API, terminal de bipagem, gráficos RechartsEstoquePage.tsxTabela de inventário com busca, skeleton loading, paginação, badges de statusapi.tsAxios centralizado com interceptors JWT automáticos e proxy ViteauthStore.tsZustand com persistência — token sobrevive ao refreshthemeStore.tsPersistência do tema escolhido
+
+Fase 2 — próxima sessão: PedidosPage, PickingPage, ShipmentsPage com CRUD completo, modais, formulários e integração total com todos os endpoints do backend. Me manda o frontend rodando e a gente avança!
+https://www.youtube.com/watch?v=8izATKqcF-8 atualizações no claude

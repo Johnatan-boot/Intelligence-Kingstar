@@ -1,0 +1,103 @@
+🧠 📐 PADRÃO OFICIAL DO PROJETO (DEFINITIVO)
+
+👉 Vamos fechar isso como regra:
+
+✅ ROTAS = default export
+✅ CONTROLLERS = default export
+✅ SERVICES = named export
+✅ MODELS/REPOSITORIES = named export
+
+💥 POR QUE ISSO?
+Camada	Tipo	Motivo
+routes	default	Fastify usa como plugin
+controllers	default	1 responsabilidade
+services	named	várias funções
+database	named	reutilização
+
+
+
+📁 orders.service.js
+
+createOrder(data)
+
+E dentro:
+
+START TRANSACTION
+
+SELECT inventory FOR UPDATE
+
+IF estoque suficiente:
+   INSERT order
+   INSERT order_items
+   INSERT stock_reservations
+   UPDATE inventory (reserved)
+
+COMMIT
+
+ELSE:
+   ROLLBACK
+
+
+   🧠 📐 FLUXO REAL (ANTES DO CÓDIGO)
+
+Inicia transação
+
+Para cada item:
+
+trava linha do estoque
+
+valida disponibilidade (quantity - reserved)
+
+Cria pedido
+
+Cria itens do pedido
+
+Cria reservas
+
+Atualiza estoque reservado
+
+Commit
+
+Se qualquer coisa falhar → rollback
+
+
+❗ CANCELAMENTO COM LIBERAÇÃO DE ESTOQUE
+
+Se não fizer isso, seu sistema vai:
+💣 travar estoque pra sempre
+💣 perder vendas
+💣 ficar inconsistente
+
+🧠 FLUXO CORRETO
+
+Cancelar pedido deve:
+
+Iniciar transação
+
+Buscar reservas do pedido
+
+Para cada item:
+
+diminuir reserved_quantity
+
+atualizar stock_reservations → CANCELLED
+
+Atualizar pedido → CANCELLED
+
+Commit
+
+Perfeito! 😎 Tudo foi criado e populado com sucesso. Agora você tem:
+
+1 cliente de teste
+
+3 produtos
+
+1 warehouse e 1 location
+
+Estoque preenchido (inventory)
+
+3 pedidos com itens
+
+Reservas de estoque (stock_reservations)
+
+Ou seja, o cenário de teste está completo e coerente com as relações de foreign key. ✅

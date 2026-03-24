@@ -1,0 +1,22 @@
+suppliers → purchase_orders → purchase_order_items → receipts → inventory
+
+products → inventory → locations → warehouses
+
+customers → orders → order_items
+
+orders → picking_orders → picking_items
+
+picking_orders → shipments → shipment_items
+
+shipments → deliveries → carriers
+
+orders → returns → return_items
+
+
+FLUXO ENTRE DOMINIOS 
+
+SUPPLIER → PURCHASE_ORDER → RECEIPT → INVENTORY
+
+INVENTORY → ORDER → PICKING → SHIPMENT → DELIVERY
+
+DELIVERY → RETURN → INVENTORY

@@ -1,0 +1,19 @@
+profissional  AI Native Developer,        |
+| ------- | -------------------- |
+| Agent 1 | Arquiteto            |
+| Agent 2 | Programador          |
+| Agent 3 | Debugger             |
+| Agent 4 | Tester               |
+| Agent 5 | Security             |
+| Agent 6 | DevOps               |
+| Agent 7 | Database Engineer    |
+| Agent 8 | Frontend Specialist  |
+| Agent 9 | Performance Engineer |
+
+  Agent 1: <tarefa de arquitetura>
+
+Agent 2: <tarefa de código>
+
+Agent 3: <analisar bugs>
+
+Agent 4: <criar testes>
