@@ -1,4 +1,4 @@
-# 🧠 Plataforma de Inteligência Operacional - Intranet Kingstar
+# 🧠 Plataforma de Inteligência Operacional - Intelligence Kingstar
 <img width="1366" height="768" alt="Captura de tela 2026-03-19 144704" src="https://github.com/user-attachments/assets/e8e7e374-cb24-4cc9-bbb8-f10951aed909" />
 <img width="1366" height="768" alt="Captura de tela 2026-03-19 144650" src="https://github.com/user-attachments/assets/da101f5d-4235-4d11-bd24-e726c0ff103c" />
 <img width="1366" height="768" alt="Captura de tela 2026-03-19 144637" src="https://github.com/user-attachments/assets/6570af22-c8d1-46ee-bfe2-713d72df0e3a" />
