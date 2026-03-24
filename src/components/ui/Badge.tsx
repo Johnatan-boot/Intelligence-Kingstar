@@ -43,7 +43,14 @@ export function OrderStatusBadge({ status }: { status: string }) {
     DELIVERED: 'ok',
     CANCELLED: 'danger',
   }
-  return <Badge variant={map[status] ?? 'neutral'}>{status}</Badge>
+  const labelMap: Record<string, string> = {
+    PENDING: 'PENDENTE',
+    CONFIRMED: 'CONFIRMADO',
+    SHIPPED: 'EM EXPEDICAO',
+    DELIVERED: 'ENTREGUE',
+    CANCELLED: 'CANCELADO',
+  }
+  return <Badge variant={map[status] ?? 'neutral'}>{labelMap[status] ?? status}</Badge>
 }
 
 /* Status de estoque → variante de cor */
@@ -63,7 +70,15 @@ export function PickingStatusBadge({ status }: { status: string }) {
     PARTIAL:     'warning',
     PICKED:      'ok',
   }
-  return <Badge variant={map[status] ?? 'neutral'}>{status.replace('_', ' ')}</Badge>
+  const labelMap: Record<string, string> = {
+    PENDING: 'PENDENTE',
+    IN_PROGRESS: 'EM ANDAMENTO',
+    COMPLETED: 'CONCLUIDO',
+    CANCELLED: 'CANCELADO',
+    PARTIAL: 'PARCIAL',
+    PICKED: 'SEPARADO',
+  }
+  return <Badge variant={map[status] ?? 'neutral'}>{labelMap[status] ?? status.replace('_', ' ')}</Badge>
 }
 
 /* Status de shipment */
@@ -75,5 +90,12 @@ export function ShipmentStatusBadge({ status }: { status: string }) {
     DELIVERED:  'ok',
     FAILED:     'danger',
   }
-  return <Badge variant={map[status] ?? 'neutral'}>{status.replace('_', ' ')}</Badge>
+  const labelMap: Record<string, string> = {
+    PREPARING: 'PREPARANDO',
+    SHIPPED: 'EXPEDIDO',
+    IN_TRANSIT: 'EM TRANSPORTE',
+    DELIVERED: 'ENTREGUE',
+    FAILED: 'FALHOU',
+  }
+  return <Badge variant={map[status] ?? 'neutral'}>{labelMap[status] ?? status.replace('_', ' ')}</Badge>
 }

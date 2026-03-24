@@ -15,6 +15,13 @@ import { toast } from '@/store/notificationStore'
 import type { Order, OrderStatus } from '@/types'
 
 const STATUS_FILTERS: (OrderStatus | 'ALL')[] = ['ALL','PENDING','CONFIRMED','SHIPPED','DELIVERED','CANCELLED']
+const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: 'PENDENTE',
+  CONFIRMED: 'CONFIRMADO',
+  SHIPPED: 'EM EXPEDICAO',
+  DELIVERED: 'ENTREGUE',
+  CANCELLED: 'CANCELADO',
+}
 
 export function PedidosPage() {
   const [orders,       setOrders]       = useState<Order[]>([])
@@ -104,7 +111,7 @@ export function PedidosPage() {
                   : 'border-[var(--ks-border)] text-[var(--ks-text-muted)] hover:border-ks-blue hover:text-white'
               )}
             >
-              {s === 'ALL' ? 'TODOS' : s}
+              {s === 'ALL' ? 'TODOS' : ORDER_STATUS_LABELS[s]}
             </button>
           ))}
           <button onClick={load} className="ks-btn ks-btn-ghost text-xs py-1.5 px-3 ml-1">

@@ -22,7 +22,7 @@ const NAV: NavItem[] = [
   { to: '/pedidos',     icon: 'fas fa-shopping-cart',  label: 'Pedidos'      },
   { to: '/compras',     icon: 'fas fa-shopping-bag',   label: 'Compras'      },
   { to: '/picking',     icon: 'fas fa-hand-paper',     label: 'Picking'      },
-  { to: '/shipments',   icon: 'fas fa-truck',          label: 'Shipments'    },
+  { to: '/shipments',   icon: 'fas fa-truck',          label: 'Expedição'    },
   { to: '/inventario',  icon: 'fas fa-clipboard-list', label: 'Inventário'   },
   { to: '/recebimento', icon: 'fas fa-truck-loading',  label: 'Recebimento'  },
   { to: '/relatorios',  icon: 'fas fa-chart-bar',      label: 'Relatórios'   },

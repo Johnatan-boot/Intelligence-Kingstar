@@ -15,6 +15,13 @@ const STATUS_COLORS: Record<ShipmentStatus, string> = {
   FAILED:     'text-ks-red     bg-ks-red/10     border-ks-red/30',
 }
 const STATUS_FLOW: ShipmentStatus[] = ['PREPARING','SHIPPED','IN_TRANSIT','DELIVERED']
+const SHIPMENT_STATUS_LABELS: Record<ShipmentStatus, string> = {
+  PREPARING: 'PREPARANDO',
+  SHIPPED: 'EXPEDIDO',
+  IN_TRANSIT: 'EM TRANSPORTE',
+  DELIVERED: 'ENTREGUE',
+  FAILED: 'FALHOU',
+}
 
 export function ShipmentsPage() {
   const [shipments, setShipments] = useState<Shipment[]>([])
@@ -27,7 +34,7 @@ export function ShipmentsPage() {
     try {
       const res = await shipmentsApi.list({ page: 1 })
       setShipments(Array.isArray(res) ? res : res.data ?? [])
-    } catch { toast.error('Erro ao carregar shipments') }
+    } catch { toast.error('Erro ao carregar expedicao') }
     finally { setLoading(false) }
   }, [])
 
@@ -53,9 +60,9 @@ export function ShipmentsPage() {
       <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="font-display text-xl sm:text-2xl font-bold text-ks-blue flex items-center gap-3">
-            <i className="fas fa-truck" /> Gestão de Shipments
+            <i className="fas fa-truck" /> Gestão de Expedição
           </h1>
-          <p className="text-sm text-[var(--ks-text-muted)] mt-1">Rastreamento e status de envios · 20s auto-refresh</p>
+          <p className="text-sm text-[var(--ks-text-muted)] mt-1">Rastreamento e status de expedição/transporte · 20s auto-refresh</p>
         </div>
       </div>
 
@@ -66,7 +73,7 @@ export function ShipmentsPage() {
           return (
             <div key={s} className={clsx('ks-card text-center py-3 px-2 border', STATUS_COLORS[s])}>
               <p className="text-xl font-bold font-display">{count}</p>
-              <p className="text-[10px] font-semibold tracking-wider mt-1">{s.replace('_',' ')}</p>
+              <p className="text-[10px] font-semibold tracking-wider mt-1">{SHIPMENT_STATUS_LABELS[s]}</p>
             </div>
           )
         })}
@@ -128,13 +135,13 @@ export function ShipmentsPage() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={e=>e.target===e.currentTarget&&setSelected(null)}>
           <div className="ks-card w-full max-w-sm ks-slide-in">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold">Atualizar Status — Shipment #{selected.id}</h3>
+              <h3 className="font-bold">Atualizar Status — Expedição #{selected.id}</h3>
               <button onClick={()=>setSelected(null)} className="text-[var(--ks-text-muted)] hover:text-white"><i className="fas fa-times"/></button>
             </div>
             <p className="text-sm text-[var(--ks-text-muted)] mb-4">
-              Status atual: <span className={clsx('font-bold', STATUS_COLORS[selected.status])}>{selected.status}</span>
+              Status atual: <span className={clsx('font-bold', STATUS_COLORS[selected.status])}>{SHIPMENT_STATUS_LABELS[selected.status]}</span>
             </p>
-            <p className="text-sm mb-5">Avançar para: <strong className="text-ks-green">{nextStatus(selected.status)}</strong>?</p>
+            <p className="text-sm mb-5">Avançar para: <strong className="text-ks-green">{nextStatus(selected.status) ? SHIPMENT_STATUS_LABELS[nextStatus(selected.status)!] : '-'}</strong>?</p>
             <div className="flex gap-3">
               <button onClick={()=>setSelected(null)} className="ks-btn ks-btn-ghost flex-1">Cancelar</button>
               <button
