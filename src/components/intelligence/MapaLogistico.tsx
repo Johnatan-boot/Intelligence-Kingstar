@@ -46,7 +46,7 @@ export function MapaLogistico() {
   const markersRef  = useRef<Map<string, any>>(new Map())
   const [drivers, setDrivers] = useState<Driver[]>(DEMO_DRIVERS)
   const [isDemo,  setIsDemo]  = useState(true)
-  const [loaded,  setLoaded]  = useState(false)
+  const { driverPos } = useRealtime()
 
   /* Carrega Leaflet do CDN se ainda não carregado */
   useEffect(() => {
@@ -59,7 +59,7 @@ export function MapaLogistico() {
 
     const script = document.createElement('script')
     script.src   = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-    script.onload = () => { initMap(); setLoaded(true) }
+    script.onload = () => { initMap() }
     document.body.appendChild(script)
 
     return () => { mapInstance.current?.remove(); mapInstance.current = null }
@@ -125,32 +125,21 @@ export function MapaLogistico() {
     })
   }
 
-  /* SSE — recebe posições reais dos entregadores */
-  useRealtime({
-    on: {
-      driver_location: (data: any) => {
-        setIsDemo(false)
-        setDrivers(prev => {
-          const filtered = prev.filter(d => d.driver_id !== data.driver_id)
-          return [...filtered, { ...data, timestamp: Date.now() }]
-        })
-        // Atualiza marcador no mapa
-        if (window.L && mapInstance.current) {
-          const cor  = STATUS_COLOR[data.status] || '#94a3b8'
-          const icon = window.L.divIcon({
-            html: `<div style="background:${cor};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 0 10px ${cor}55;border:2px solid #000"><span style="font-size:13px">🚚</span></div>`,
-            className: '', iconSize: [28,28], iconAnchor: [14,14],
-          })
-          if (markersRef.current.has(data.driver_id)) {
-            markersRef.current.get(data.driver_id).setLatLng([data.lat, data.lng])
-          } else {
-            const m = window.L.marker([data.lat, data.lng], { icon }).addTo(mapInstance.current)
-            markersRef.current.set(data.driver_id, m)
-          }
-        }
-      },
-    },
-  })
+  useEffect(() => {
+    if (!driverPos) return
+    setIsDemo(false)
+    setDrivers(prev => {
+      const filtered = prev.filter(d => d.driver_id !== driverPos.id)
+      return [...filtered, {
+        driver_id: driverPos.id,
+        name: driverPos.name || 'Motorista',
+        lat: driverPos.lat,
+        lng: driverPos.lng,
+        status: 'Em Rota',
+        timestamp: Date.now()
+      }]
+    })
+  }, [driverPos])
 
   useEffect(() => { renderMarkers(drivers) }, [drivers])
 

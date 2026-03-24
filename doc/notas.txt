@@ -17,3 +17,12 @@ Agent 2: <tarefa de código>
 Agent 3: <analisar bugs>
 
 Agent 4: <criar testes>
+
+--- API em producao (variaveis obrigatorias) ---
+NODE_ENV=production
+JWT_SECRET=<segredo longo e aleatorio; nunca usar default>
+CORS_ORIGIN=https://seu-frontend.pages.dev,https://www.seudominio.com
+TRUST_PROXY=1
+DB_HOST / DB_USER / DB_PASSWORD / DB_NAME
+RATE_LIMIT_MAX / RATE_LIMIT_WINDOW (opcional)
+Modelo completo: backend/.env.example

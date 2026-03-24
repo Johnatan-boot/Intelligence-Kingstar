@@ -1,61 +1,28 @@
-import { useEffect, useMemo, useState } from "react"
-import { io, type Socket } from "socket.io-client"
-
-type RealtimeOptions = {
-  url?: string
-  on?: {
-    connect?: () => void
-    disconnect?: () => void
-    message?: (data: unknown) => void
-  }
-}
-
-export function useRealtime(options?: RealtimeOptions) {
-  const socket: Socket = useMemo(() => {
-    const realtimeUrl = options?.url ?? "http://localhost:3000"
-
-    return io(realtimeUrl, { autoConnect: true })
-  }, [options?.url])
-
-  const [connected, setConnected] = useState<boolean>(socket.connected)
-
-  useEffect(() => {
-    const handleConnect = () => {
-      setConnected(true)
-      options?.on?.connect?.()
-    }
-
-    const handleDisconnect = () => {
-      setConnected(false)
-      options?.on?.disconnect?.()
-    }
-
-    const handleMessage = (data: unknown) => {
-      options?.on?.message?.(data)
-    }
-
-    socket.on("connect", handleConnect)
-    socket.on("disconnect", handleDisconnect)
-    socket.on("message", handleMessage)
-
-    return () => {
-      socket.off("connect", handleConnect)
-      socket.off("disconnect", handleDisconnect)
-      socket.off("message", handleMessage)
-      socket.disconnect()
-    }
-  }, [socket, options?.on])
-
-  return { connected }
-}
+/**
+ * CorePage — painel operacional (placeholder enxuto).
+ * Realtime usa o mesmo cliente Socket.io do restante da app.
+ */
+import { useEffect, useState } from 'react'
+import { socket } from '@/services/socket'
 
 export function CorePage() {
-  const { connected } = useRealtime()
+  const [connected, setConnected] = useState(socket.connected)
+
+  useEffect(() => {
+    const onConnect = () => setConnected(true)
+    const onDisconnect = () => setConnected(false)
+    socket.on('connect', onConnect)
+    socket.on('disconnect', onDisconnect)
+    return () => {
+      socket.off('connect', onConnect)
+      socket.off('disconnect', onDisconnect)
+    }
+  }, [])
 
   return (
-    <main style={{ padding: "1rem" }}>
+    <main style={{ padding: '1rem' }}>
       <h1>Core</h1>
-      <p>Status do realtime: {connected ? "conectado" : "desconectado"}</p>
+      <p>Status do realtime: {connected ? 'conectado' : 'desconectado'}</p>
     </main>
   )
 }

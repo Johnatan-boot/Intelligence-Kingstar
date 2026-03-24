@@ -173,3 +173,44 @@ export const revenueQuerySchema = z.object({
 export const topProductsQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(10),
 });
+
+// ─── LOGISTICS (COMPRAS / RECEBIMENTO) ───────────────────────────────────────
+const plateRegex = /^[A-Z]{3}-?\d[A-Z0-9]\d{2}$/i;
+
+export const createPurchaseOrderLogisticsSchema = z.object({
+  provider_id: z.coerce.number().int().positive().optional(),
+  provider_name: z.string().min(2).max(255).optional(),
+  expected_delivery_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  invoice_number: z.string().min(1).max(50),
+  license_plate: z.string().min(7).max(20).regex(plateRegex, 'Placa inválida'),
+  items: z.array(z.object({
+    product_id: id,
+    quantity_ordered: z.coerce.number().int().positive(),
+  })).optional().default([]),
+}).refine((d) => !!d.provider_id || !!d.provider_name, {
+  message: 'Informe provider_id ou provider_name',
+});
+
+export const createReceivingBatchSchema = z.object({
+  purchase_order_id: id,
+  invoice_number: z.string().min(1).max(50),
+  license_plate: z.string().min(7).max(20).regex(plateRegex, 'Placa inválida'),
+  provider_name: z.string().min(2).max(255).optional(),
+});
+
+export const receivingBatchParamsSchema = z.object({ id });
+
+export const updateReceivingBatchStatusSchema = z.object({
+  status: z.enum(['ARRIVED', 'IN_CONFERENCE', 'RELEASED', 'DIVERGENT']),
+});
+
+export const addConferenceRoundSchema = z.object({
+  product_id: id,
+  round_number: z.coerce.number().int().min(1).max(3),
+  quantity_counted: z.coerce.number().int().min(0),
+  user_id: z.coerce.number().int().positive().optional(),
+  invoice_number: z.string().max(50).optional(),
+  provider_name: z.string().max(255).optional(),
+  license_plate: z.string().max(20).optional(),
+  evidence_image_base64: z.string().min(10).optional(),
+});

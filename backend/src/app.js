@@ -2,6 +2,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
+import helmet from '@fastify/helmet';
+import rateLimit from '@fastify/rate-limit';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import socketio from 'fastify-socket.io';
@@ -26,42 +28,77 @@ import realtimeRoutes from './modules/realtime/realtime.routes.js';
 
 dotenv.config();
 
+const isProd = process.env.NODE_ENV === 'production';
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+if (isProd && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'kingstar_secret_troque_em_producao')) {
+  throw new Error('JWT_SECRET forte é obrigatório em produção');
+}
+
+/* Atrás de Cloudflare / load balancer: IP real e rate limit corretos */
+const trustProxy = process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true';
+
 const app = Fastify({
+  trustProxy,
   logger: {
-    transport: {
-      target: 'pino-pretty',
-      options: { colorize: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname' },
-    },
+    transport: !isProd
+      ? {
+          target: 'pino-pretty',
+          options: { colorize: true, translateTime: 'SYS:HH:MM:ss', ignore: 'pid,hostname' },
+        }
+      : undefined,
   },
 });
 
 // ── Plugins ──────────────────────────────────────────────────────────────────
-await app.register(cors, { origin: true });
+await app.register(helmet, {
+  global: true,
+  contentSecurityPolicy: isProd ? undefined : false,
+});
+await app.register(rateLimit, {
+  max: Number(process.env.RATE_LIMIT_MAX || 120),
+  timeWindow: process.env.RATE_LIMIT_WINDOW || '1 minute',
+  allowList: (req) => req.ip === '127.0.0.1' || req.ip === '::1',
+  keyGenerator: (req) => (trustProxy && req.headers['cf-connecting-ip']) ? String(req.headers['cf-connecting-ip']) : req.ip,
+});
+await app.register(cors, {
+  origin: (origin, cb) => {
+    if (!origin || !isProd) return cb(null, true);
+    if (!allowedOrigins.length) return cb(null, false);
+    return cb(null, allowedOrigins.includes(origin));
+  },
+  credentials: true
+});
 await app.register(socketio, {
-  cors: { origin: '*' }
+  cors: { origin: !isProd ? true : allowedOrigins }
 });
 
 await app.register(jwt, {
   secret: process.env.JWT_SECRET || 'kingstar_secret_troque_em_producao',
 });
 
-await app.register(swagger, {
-  openapi: {
-    openapi: '3.0.0',
-    info: { title: 'KINGSTAR WMS API', description: 'Sistema de Gestão de Armazém', version: '2.0.0' },
-    components: {
-      securitySchemes: {
-        bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+if (!isProd) {
+  await app.register(swagger, {
+    openapi: {
+      openapi: '3.0.0',
+      info: { title: 'KINGSTAR WMS API', description: 'Sistema de Gestão de Armazém', version: '2.0.0' },
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        },
       },
+      security: [{ bearerAuth: [] }],
     },
-    security: [{ bearerAuth: [] }],
-  },
-});
+  });
 
-await app.register(swaggerUi, {
-  routePrefix: '/docs',
-  uiConfig: { docExpansion: 'list', deepLinking: false },
-});
+  await app.register(swaggerUi, {
+    routePrefix: '/docs',
+    uiConfig: { docExpansion: 'list', deepLinking: false },
+  });
+}
 
 // ── Health Check ─────────────────────────────────────────────────────────────
 app.get('/health', { logLevel: 'silent' }, async () => ({
@@ -100,7 +137,7 @@ const start = async () => {
     await app.listen({ port: Number(process.env.PORT) || 3001, host: '0.0.0.0' });
     console.log(`\n🚀  http://localhost:${process.env.PORT || 3001}`);
     console.log(`📚  Swagger: http://localhost:${process.env.PORT || 3001}/docs`);
-    console.log(`💚  Health:  http://localhost:${process.env.PORT || 3000}/health\n`);
+    console.log(`💚  Health:  http://localhost:${process.env.PORT || 3001}/health\n`);
   } catch (err) {
     app.log.error(err);
     process.exit(1);
